@@ -1,0 +1,191 @@
+generator client {
+  provider   = "prisma-client"
+  output     = "./generated"
+  engineType = "client"
+  runtime    = "bun"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
+model User {
+  id        String    @id @default(cuid()) @db.VarChar(30)
+  email     String    @unique
+  name      String
+  password  String?
+  avatarUrl String?   @db.Text
+  isAdmin   Boolean   @default(false)
+  credits   Int       @default(7)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deleteAt  DateTime?
+
+  payment  Payment[]
+  history  History[]
+  person   User_Person[]
+  accounts Account[]
+}
+
+model Payment {
+  id         String @id @default(cuid()) @db.VarChar(30)
+  externalId String @unique
+  status     String
+
+  product   Product @relation(fields: [productId], references: id)
+  productId String
+
+  user   User   @relation(fields: [userId], references: id, onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id       String  @id @default(cuid()) @db.VarChar(30)
+  name     String
+  credits  Int
+  price    Float
+  currency String
+  region   String
+  active   Boolean @default(true)
+
+  payments Payment[]
+}
+
+model Account {
+  id                String  @id @default(cuid()) @db.VarChar(30)
+  provider          String
+  providerAccountId String
+  accessToken       String? @db.Text
+  refreshToken      String? @db.Text
+  expiresAt         Int?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Email_Verification {
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  email     String   @unique
+  name      String
+  password  String
+  code      String   @db.Char(6)
+  expiresAt DateTime
+  createdAt DateTime @default(now()) // Útil para limpeza de DB
+}
+
+model User_Person {
+  id       Int     @id @default(autoincrement())
+  isActive Boolean @default(true)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  person   Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+  personId Int
+
+  @@unique([userId, personId])
+  @@index([personId])
+}
+
+model Person {
+  id          Int           @id @default(autoincrement())
+  
+  ///[PersonTraits]
+  trait       Json
+  icon        String
+  ///[PersonDesc]
+  desc        Json
+  user_person User_Person[]
+}
+
+model History {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  recommended   Recommended @relation(fields: [recommendedId], references: [id], onDelete: Cascade)
+  recommendedId String
+
+  @@index([userId])
+  @@index([recommendedId])
+}
+
+model Recommended {
+  id        String   @id @default(cuid()) @db.VarChar(30)
+  title     String
+  img       String   @db.Text
+  plot      String   @db.MediumText
+  year      String
+  creator   String
+  rating    String?
+  updatedAt DateTime @updatedAt
+  link      String?  @db.MediumText
+
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId Int
+
+  recomGenres     Recom_Genre[]
+  histories       History[]
+  translatedPlots TranslatedPlot[]
+
+  @@unique([title, creator, categoryId])
+  @@index([categoryId, title])
+}
+
+model TranslatedPlot {
+  id       Int    @id @default(autoincrement())
+  language String
+  content  String @db.MediumText
+
+  recommended   Recommended @relation(fields: [recommendedId], references: [id], onDelete: Cascade)
+  recommendedId String
+
+  @@unique([recommendedId, language])
+}
+
+model Recom_Genre {
+  id            Int         @id @default(autoincrement())
+  genre         Genre       @relation(fields: [genreId], references: [id], onDelete: Cascade)
+  genreId       Int
+  recommended   Recommended @relation(fields: [recommendedId], references: [id], onDelete: Cascade)
+  recommendedId String
+
+  @@unique([recommendedId, genreId])
+  @@index([genreId])
+}
+
+model Genre {
+  id                Int                @id @default(autoincrement())
+  name              String             @unique
+  recomGenres       Recom_Genre[]
+  genreTranslations GenreTranslation[]
+}
+
+model GenreTranslation {
+  id       Int    @id @default(autoincrement())
+  language String
+  content  String
+  genreId  Int
+  genre    Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@unique([genreId, language])
+}
+
+model Category {
+  id           Int           @id @default(autoincrement())
+  ///[CategoryTitle]
+  title        Json        
+  isActive     Boolean       @default(true)
+  recommendeds Recommended[]
+}
