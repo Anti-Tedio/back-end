@@ -30,8 +30,8 @@
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/seu-usuario/anti-tedio-backend.git
-cd anti-tedio-backend
+git clone https://github.com/Anti-Tedio/back-end.git
+cd back-end
 
 # 2. Instale as dependências
 bun install
