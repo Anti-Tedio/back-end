@@ -47,3 +47,4 @@ package-lock.json
 
 /prisma/generated
 /prisma/migrations
+/public/avatars
