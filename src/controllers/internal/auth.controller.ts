@@ -171,7 +171,7 @@ export const authController = {
 
         await redis.del(`account_recovery_token:${userId}`);
 
-        return c.redirect(`${Bun.env.FRONTEND_URL}/recovery`)
+        return c.json({ ok: true }, 200);
     },
 
     changePassword: async (c: Context) => {
