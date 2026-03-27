@@ -16,6 +16,7 @@ import { redis } from 'bun';
 import { paymentRoutes } from './routes/payment.routes';
 import { webhookRoutes } from './routes/webhook.routes';
 import { productRoutes } from './routes/product.routes';
+import { contactRoutes } from './routes/contact.routes';
 
 const app = new Hono();
 
@@ -78,7 +79,8 @@ app.route('/ai', aiRoutes);
 app.route('/auth', authRoutes);
 app.route('/payment', paymentRoutes);
 app.route('/webhooks', webhookRoutes);
-app.route('/product', productRoutes)
+app.route('/product', productRoutes);
+app.route('/contact', contactRoutes)
 
 export default {
   port: 3000,

@@ -59,7 +59,7 @@ authRoutes.use(
             'id',
             'name',
             'picture',
-        ],
+        ], 
     }),
     authController.facebook
 )
